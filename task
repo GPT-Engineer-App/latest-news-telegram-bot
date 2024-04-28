@@ -1,0 +1,32 @@
+import requests
+from bs4 import BeautifulSoup
+from telegram import Bot
+
+TOKEN = 'your_telegram_bot_token'
+CHANNEL_ID = '@your_channel_id'
+bot = Bot(token=TOKEN)
+
+def fetch_latest_news():
+    url = 'https://quote.rbc.ru/?utm_source=topline'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    # Assuming news items are contained in elements with class 'news_item'
+    news_items = soup.find_all('div', class_='news_item')
+    latest_news = news_items[0]  # Get the latest news item
+    
+    title = latest_news.find('a', class_='news_item__title').text.strip()
+    link = latest_news.find('a', class_='news_item__title')['href']
+    
+    return title, link
+
+def post_to_telegram(title, link):
+    message = f"📰 {title}\nRead more: {link}"
+    bot.send_message(chat_id=CHANNEL_ID, text=message)
+
+def main():
+    title, link = fetch_latest_news()
+    post_to_telegram(title, link)
+
+if __name__ == '__main__':
+    main()
